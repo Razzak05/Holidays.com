@@ -1,5 +1,5 @@
 import { useForm } from "react-hook-form";
-import { useMutation, useQueryClient } from "@tanstack/react-query"; // Add useQueryClient
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import * as apiClient from "../api-client";
 import { useAppContext } from "../contexts/AppContext";
 import { Link, useNavigate } from "react-router-dom";
@@ -16,7 +16,7 @@ type MutationError = {
 const SignIn = () => {
   const navigate = useNavigate();
   const { showToast } = useAppContext();
-  const queryClient = useQueryClient(); // Add this
+  const queryClient = useQueryClient();
   const {
     register,
     formState: { errors },
@@ -26,7 +26,7 @@ const SignIn = () => {
   const mutation = useMutation<void, MutationError, SignInFormData>({
     mutationFn: apiClient.signIn,
     onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: ["validateToken"] }); // Invalidate query
+      await queryClient.invalidateQueries({ queryKey: ["validateToken"] });
       showToast({ message: "Login Successful!", type: "SUCCESS" });
       navigate("/");
     },
@@ -39,9 +39,14 @@ const SignIn = () => {
     mutation.mutate(data);
   });
 
-  // Rest of the component remains unchanged
+  const handleGoogleSignIn = () => {
+    window.location.href = `${
+      import.meta.env.VITE_API_BASE_URL
+    }/api/auth/google`;
+  };
+
   return (
-    <form className="flex flex-col gap-5 w-full sm:w-1/2" onSubmit={onSubmit}>
+    <div className="flex flex-col gap-5 w-full sm:w-1/2">
       <h2 className="text-3xl font-bold">Sign In</h2>
       {/* Email Field */}
       <label className="text-gray-700 text-sm font-bold">
@@ -85,11 +90,20 @@ const SignIn = () => {
           type="submit"
           className="bg-blue-600 text-white p-2 font-bold hover:bg-blue-500 text-xl disabled:opacity-50"
           disabled={mutation.isPending}
+          onClick={onSubmit}
         >
           {mutation.isPending ? "Logging in..." : "Login"}
         </button>
       </span>
-    </form>
+      {/* Google Sign-In Button */}
+      <button
+        type="button"
+        className="bg-red-600 text-white p-2 font-bold hover:bg-red-500 text-xl"
+        onClick={handleGoogleSignIn}
+      >
+        Sign In with Google
+      </button>
+    </div>
   );
 };
 

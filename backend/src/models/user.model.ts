@@ -1,11 +1,13 @@
 import mongoose from "mongoose";
 
-export type UserType = {
+type UserType = {
   _id: string;
   email: string;
-  password: string;
+  password?: string; // Optional for Google auth users
   firstName: string;
   lastName: string;
+  googleId?: string; // Only for Google-authenticated users
+  provider: "local" | "google"; // Tracks login method
 };
 
 const userSchema = new mongoose.Schema({
@@ -16,7 +18,9 @@ const userSchema = new mongoose.Schema({
   },
   password: {
     type: String,
-    required: true,
+    required: function (this: UserType) {
+      return this.provider === "local"; // Only required for local users
+    },
   },
   firstName: {
     type: String,
@@ -25,6 +29,17 @@ const userSchema = new mongoose.Schema({
   lastName: {
     type: String,
     required: true,
+  },
+  googleId: {
+    type: String,
+    unique: true,
+    sparse: true, // Allows nulls but enforces uniqueness
+  },
+  provider: {
+    type: String,
+    required: true,
+    enum: ["local", "google"],
+    default: "local",
   },
 });
 
